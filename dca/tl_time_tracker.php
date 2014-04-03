@@ -117,7 +117,7 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 class tl_time_tracker extends \Backend
 {
 	protected $headerTemplate =
-		'<span style="display:inline-block;width:10em;white-space:nowrap">%s</span>
+		'<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
 		<span style="display:inline-block;width:10em;white-space:nowrap">%s</span>
 		<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
 		<span style="display:inline-block;width:8em;white-space:nowrap;text-align:center">%s</span>
@@ -125,7 +125,7 @@ class tl_time_tracker extends \Backend
 		<span style="display:inline-block;width:6em;white-space:nowrap;text-align:right">%s</span>';
 
 	protected $rowTemplate =
-		'<span style="display:inline-block;width:10em;white-space:nowrap">%s</span>
+		'<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
 		<span style="display:inline-block;width:10em;white-space:nowrap">%s</span>
 		<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
 		<span style="display:inline-block;width:8em;white-space:nowrap;text-align:center">%s</span>
