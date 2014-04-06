@@ -1,5 +1,6 @@
 <?php if (!defined('TL_ROOT')) die('You cannot access this file directly!');
 
+
 $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 (
 	// Config
@@ -8,12 +9,18 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 		'dataContainer'			=> 'Table',
 		'ptable'				=> 'tl_user',
 		'closed'				=> true,
+		'notSortable'			=> true,
 		'notEditable'			=> true,
+		'notCopyable'			=> true,
+		'notCopyable'			=> true,
+		'notCreatable'			=> true,
+		'doNotCopyRecords'		=> true,
 		'sql' => array
 		(
 			'keys' => array
 			(
-				'id' => 'primary'
+				'id'	=> 'primary',
+				'pid'	=> 'index'
 			)
 		)
 	),
@@ -24,8 +31,8 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 		'sorting' => array
 		(
 			'mode'                    => 2,
-			'fields'                  => array('last_activity DESC', 'pid DESC'),
-			'panelLayout'             => 'filter;sort,search,limit'
+			'fields'                  => array('last_activity DESC'),
+			'panelLayout'             => 'filter,search,limit'
 		),
 		'label' => array
 		(
@@ -75,6 +82,10 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 		'pid' => array
 		(
 			'label'			=> &$GLOBALS['TL_LANG']['tl_time_tracker']['pid'],
+			'filter'		=> true,
+			'sorting'		=> false,
+			'flag'			=> 1,
+			'options_callback'	=> array('tl_time_tracker', 'getUserNames'),
 			'sql'			=> "int(10) unsigned NOT NULL"
 		),
 		'login_time' => array
@@ -88,7 +99,7 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 		'logout_time' => array
 		(
 			'label'			=> &$GLOBALS['TL_LANG']['tl_time_tracker']['logout_time'],
-			'filter'		=> true,
+			'filter'		=> false,
 			'sorting'		=> true,
 			'flag'			=> 6,
 			'sql'			=> "int(10) unsigned NOT NULL default '0'"
@@ -96,7 +107,7 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 		'last_activity' => array
 		(
 			'label'			=> &$GLOBALS['TL_LANG']['tl_time_tracker']['last_activity'],
-			'filter'		=> true,
+			'filter'		=> false,
 			'sorting'		=> true,
 			'flag'			=> 6,
 			'sql'			=> "int(10) unsigned NOT NULL default '0'"
@@ -134,6 +145,22 @@ class tl_time_tracker extends \Backend
 
 	protected $blnFirstHeader = TRUE;
 
+
+	public function getUserNames(\DataContainer $dc)
+	{
+		$arrReturn = array();
+
+		$objResult = \Database::getInstance()->prepare("SELECT `id`, `name` FROM `tl_user` WHERE `disable`<>'1' ORDER BY `name`")->execute();
+
+		while ($objResult->next())
+		{
+			$arrReturn[$objResult->id] = $objResult->name;
+		}
+
+		return $arrReturn;
+	}
+
+
 	public function renderHeader($header, $flag)
 	{
 		if ($this->blnFirstHeader)
@@ -156,10 +183,17 @@ class tl_time_tracker extends \Backend
 		$intMinutes = floor(($intEditTime-$intDays*86400-$intHours*3600)/60);
 		$intSeconds = $intEditTime-$intDays*86400-$intHours*3600-$intMinutes*60;
 
+		$strActivity = $row['do_activity'];
+
+		if (isset($GLOBALS['TL_LANG']['MOD'][$row['do_activity']]) && is_array($GLOBALS['TL_LANG']['MOD'][$row['do_activity']]))
+		{
+			$strActivity = $GLOBALS['TL_LANG']['MOD'][$row['do_activity']][0];
+		}
+
 		$label = sprintf($this->rowTemplate,
 					\UserModel::findByPk($row['pid'])->name,
 					date('d.m \u\m H:i', $row['login_time']),
-					$row['do_activity'],
+					$strActivity,
 					date('H:i:s', $row['last_activity']),
 					$row['edit_count'],
 					sprintf('%s%d:%02d:%02d', ($intDays>0?$intDays.'T ':''), $intHours, $intMinutes, $intSeconds)

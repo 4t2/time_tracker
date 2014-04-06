@@ -12,7 +12,7 @@
  * @license    http://opensource.org/licenses/lgpl-3.0.html
  */
 
-class TimeTrackerHooks extends \Backend
+class TimeTrackerHooks extends \Frontend
 {
 	public function __construct()
 	{
@@ -33,8 +33,13 @@ class TimeTrackerHooks extends \Backend
 
 		$objSession = \Session::getInstance();
 
-		$objDatabase->prepare('UPDATE `tl_time_tracker` SET `logout_time` = `last_activity` WHERE `pid` = ? AND `logout_time` = 0')
+
+		$objDatabase->prepare('UPDATE `tl_time_tracker` SET `logout_time`=`last_activity` WHERE `pid`=? AND `logout_time`=0')
 					->execute($objUser->id);
+
+		$objDatabase->prepare('UPDATE `tl_time_tracker` SET `logout_time`=`last_activity` WHERE `logout_time`=0 AND `last_activity`+?<?')
+					->execute($GLOBALS['TL_CONFIG']['sessionTimeout'], time());
+
 
 		$objResult = $objDatabase->prepare('INSERT INTO `tl_time_tracker` (`pid`, `login_time`, `last_activity`, `do_activity`, `edit_count`) VALUES(?, ?, ?, "login", 0)')
 		 						->execute($objUser->id, time(), time());
@@ -71,10 +76,7 @@ class TimeTrackerHooks extends \Backend
 	{
 		$objDatabase = \Database::getInstance();
 
-		$objUser = \BackendUser::getInstance();
-		$objUser->authenticate();
-
-		if (!$objDatabase->tableExists('tl_time_tracker') || !$objUser->id != '')
+		if (!$objDatabase->tableExists('tl_time_tracker') || !$this->getLoginStatus('BE_USER_AUTH'))
 		{
 			return $strContent;
 		}
@@ -82,8 +84,6 @@ class TimeTrackerHooks extends \Backend
 		$objSession = \Session::getInstance();
 
 		$intTimeTrackId = $objSession->get('TIME_TRACKER_ID');
-
-#\System::log('outputBackendTemplateHook :: ID: '.$intTimeTrackId, __METHOD__, TL_ERROR);
 
 		if (\Input::get('do'))
 		{

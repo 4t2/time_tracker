@@ -15,7 +15,7 @@
 /**
  * Back end modules
  */
-$GLOBALS['BE_MOD']['system']['time_tracker'] = array
+$GLOBALS['BE_MOD']['accounts']['time_tracker'] = array
 (
 		'tables'		=> array('tl_time_tracker'),
 		'icon'			=> 'system/modules/time_tracker/assets/images/clock.png',
