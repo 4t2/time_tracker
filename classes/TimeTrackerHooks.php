@@ -99,4 +99,18 @@ class TimeTrackerHooks extends \Frontend
 		return $strContent;
 	}
 
+/*
+	public function parseBackendTemplateHook($strContent, $strTemplate)
+	{
+		if ($strTemplate == 'be_main')
+		{
+			if (preg_match('#<select[^>]*id="login_time"[^>]*>(.*)</select>#siU', $strContent, $match))
+			{
+				#die('<pre>'.htmlspecialchars(var_export($match, true)));
+			}
+		}
+
+		return $strContent;
+	}
+*/
 }

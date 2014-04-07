@@ -11,4 +11,4 @@
  * @copyright Lingo4you
  */
 
-$GLOBALS['TL_LANG']['MOD']['time_tracker'] = array('Zeiterfassung', 'Zeiterfassung von Backend-Nutzern');
+$GLOBALS['TL_LANG']['MOD']['time_tracker'] = array('Zeitverfolgung', 'Zeitverfolgung von Backend-Nutzern');

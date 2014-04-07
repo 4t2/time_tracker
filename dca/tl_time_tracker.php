@@ -37,8 +37,7 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 		'label' => array
 		(
 			'fields'				=> array('pid', 'login_time', 'logout_time', 'last_activity', 'do_activity', 'edit_count'),
-#			'format'                  => '<span style="color:#b3b3b3;padding-right:3px">[%s]</span> %s bis %s (zuletzt aktiv %s)',
-			'maxCharacters'			=> 96,
+#			'maxCharacters'			=> 96,
 			'group_callback'		=> array('tl_time_tracker', 'renderHeader'),
 			'label_callback'		=> array('tl_time_tracker', 'renderRow')
 		),
@@ -50,7 +49,6 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 				'href'                => 'act=select',
 				'class'               => 'header_edit_all',
 				'attributes'          => 'onclick="Backend.getScrollOffset();" accesskey="e"'
-#				'button_callback'     => array('tl_site_export_rules', 'headerButtons')
 			)
 		),
 		'operations' => array
@@ -93,7 +91,7 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 			'label'			=> &$GLOBALS['TL_LANG']['tl_time_tracker']['login_time'],
 			'filter'		=> true,
 			'sorting'		=> true,
-			'flag'			=> 6,
+			'flag'			=> 8,
 			'sql'			=> "int(10) unsigned NOT NULL default '0'"
 		),
 		'logout_time' => array
@@ -128,20 +126,20 @@ $GLOBALS['TL_DCA']['tl_time_tracker'] = array
 class tl_time_tracker extends \Backend
 {
 	protected $headerTemplate =
-		'<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:10em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:8em;white-space:nowrap;text-align:center">%s</span>
-		<span style="display:inline-block;width:6em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:6em;white-space:nowrap;text-align:right">%s</span>';
+		'<span style="display:inline-block;width:165px;white-space:nowrap">%s</span>
+		<span style="display:inline-block;width:90px;white-space:nowrap">%s</span>
+		<span style="display:inline-block;width:190px;white-space:nowrap">%s</span>
+		<span style="display:inline-block;width:40px;white-space:nowrap">%s</span>
+		<span style="display:inline-block;width:70px;white-space:nowrap;text-align:right">%s</span>
+		<span style="display:inline-block;width:70px;white-space:nowrap;text-align:right">%s</span>';
 
 	protected $rowTemplate =
-		'<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:10em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:12em;white-space:nowrap">%s</span>
-		<span style="display:inline-block;width:8em;white-space:nowrap;text-align:center">%s</span>
-		<span style="display:inline-block;width:3em;white-space:nowrap;text-align:right;padding-right:3em">%s</span>
-		<span style="display:inline-block;width:6em;white-space:nowrap;text-align:right">%s</span>';
+		'<span style="display:inline-block;width:140px;white-space:nowrap;padding-left:25px;background:url(/system/themes/default/images/%s.gif) no-repeat scroll left;">%s</span>
+		<span style="display:inline-block;width:90px;white-space:nowrap">%s</span>
+		<span style="display:inline-block;width:190px;white-space:nowrap">%s : %s</span>
+		<span style="display:inline-block;width:40px;white-space:nowrap;text-align:right">%s</span>
+		<span style="display:inline-block;width:70px;white-space:nowrap;text-align:right">%s</span>
+		<span style="display:inline-block;width:70px;white-space:nowrap;text-align:right">%s</span>';
 
 	protected $blnFirstHeader = TRUE;
 
@@ -166,7 +164,7 @@ class tl_time_tracker extends \Backend
 		if ($this->blnFirstHeader)
 		{
 			$this->blnFirstHeader = FALSE;
-			return sprintf($this->headerTemplate, $header, 'Login', 'letzte Aktivität', 'um', 'Zähler', 'Zeit');
+			return sprintf($this->headerTemplate, $header, $GLOBALS['TL_LANG']['time_tracker']['login_time'], $GLOBALS['TL_LANG']['time_tracker']['do_activity'], $GLOBALS['TL_LANG']['time_tracker']['edit_count'], $GLOBALS['TL_LANG']['time_tracker']['online_time'], 'Summe');
 		}
 		else
 		{
@@ -178,11 +176,6 @@ class tl_time_tracker extends \Backend
 	{
 		$intEditTime = $row['last_activity'] - $row['login_time'];
 
-		$intDays = floor($intEditTime/86400);
-		$intHours = floor(($intEditTime-$intDays*86400)/3600);
-		$intMinutes = floor(($intEditTime-$intDays*86400-$intHours*3600)/60);
-		$intSeconds = $intEditTime-$intDays*86400-$intHours*3600-$intMinutes*60;
-
 		$strActivity = $row['do_activity'];
 
 		if (isset($GLOBALS['TL_LANG']['MOD'][$row['do_activity']]) && is_array($GLOBALS['TL_LANG']['MOD'][$row['do_activity']]))
@@ -190,13 +183,31 @@ class tl_time_tracker extends \Backend
 			$strActivity = $GLOBALS['TL_LANG']['MOD'][$row['do_activity']][0];
 		}
 
+		if (isset($GLOBALS['time_tracker'][$row['pid']][date('d.m.Y', $row['last_activity'])]))
+		{
+			$intUserTime = $GLOBALS['time_tracker'][$row['pid']][date('d.m.Y', $row['last_activity'])] + $intEditTime;
+
+		}
+		else
+		{
+			$intUserTime = $intEditTime;
+		}
+
+		$GLOBALS['time_tracker'][$row['pid']][date('d.m.Y', $row['last_activity'])] = $intUserTime;
+
+		$objUser = \UserModel::findByPk($row['pid']);
+
+		$strIcon = ($objUser->admin == '1' ? 'admin' : 'user') . ($row['logout_time'] > 0 ? '_' : '');
+
 		$label = sprintf($this->rowTemplate,
-					\UserModel::findByPk($row['pid'])->name,
-					date('d.m \u\m H:i', $row['login_time']),
-					$strActivity,
+		            $strIcon,
+					$objUser->name,
+					date('d.m. H:i', $row['login_time']),
 					date('H:i:s', $row['last_activity']),
+					$strActivity,
 					$row['edit_count'],
-					sprintf('%s%d:%02d:%02d', ($intDays>0?$intDays.'T ':''), $intHours, $intMinutes, $intSeconds)
+					$this->getReadableTime($intEditTime),
+					$this->getReadableTime($intUserTime)
 		);
 
 		if ($row['logout_time'] > 0)
@@ -205,5 +216,16 @@ class tl_time_tracker extends \Backend
 		}
 
 		return $label;
+	}
+
+
+	protected function getReadableTime($time)
+	{
+		$intDays = floor($time/86400);
+		$intHours = floor(($time-$intDays*86400)/3600);
+		$intMinutes = floor(($time-$intDays*86400-$intHours*3600)/60);
+		$intSeconds = $time-$intDays*86400-$intHours*3600-$intMinutes*60;
+
+		return sprintf('%s%d:%02d:%02d', ($intDays>0?$intDays.'T ':''), $intHours, $intMinutes, $intSeconds);
 	}
 }
